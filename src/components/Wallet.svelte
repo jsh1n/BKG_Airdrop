@@ -1,7 +1,10 @@
 <script>
+  import { onMount } from 'svelte';
   import { ethers } from 'ethers';
   import { toast } from '@zerodevx/svelte-toast'
+
   import GiveawayABI from "./Giveaway.json"
+  import { switchEthereumChainOrNothing } from '../util/wallet';
 
   let account;
   let provider;
@@ -10,22 +13,28 @@
   let connectWalletError;
   let walletConnected = false;
   let giveawayContract;
+
+  onMount(async () => {
+    walletConnected = false;
+
+    if (typeof window.ethereum === 'undefined') {
+      toast.push('Metamask is not installed')
+    }
+    provider = new ethers.providers.Web3Provider(window.ethereum, 'any');
+    provider.on("network", (newNetwork, oldNetwork) => {
+        if (oldNetwork) {
+            toast.push(`Network Change Detected! ${JSON.stringify(newNetwork)}`)
+            window.location.reload();
+        }
+    });
+
+    await switchEthereumChainOrNothing(window.ethereum);
+  })
   
   async function connectWallet() {
-    walletConnected = false;
-    const { ethereum } = window;
-    
-    provider = new ethers.providers.Web3Provider(ethereum);
-    giveawayContract = new ethers.Contract(
-      CONTRACT_ADDRESS,
-      GiveawayABI.abi,
-      provider
-    )
-    remainTokens = await giveawayContract.deposited();
-
-    await ethereum
+    await window.ethereum
       .request({ method: 'eth_requestAccounts' })
-      .then((accountList) => {
+      .then(async (accountList) => {
         const [firstAccount] = accountList;
         account = firstAccount;
         signer = provider.getSigner();
@@ -34,19 +43,17 @@
           GiveawayABI.abi,
           signer
         )
+        remainTokens = await giveawayContract.deposited();
         walletConnected = true;
-      })
-
-      .catch((error) => {
+      }).catch((error) => {
         walletConnected = false;
         connectWalletError = error;
         console.log('error connecting wallet');
       });
-
   }
 
   const claim = async () => {
-    tx = await giveawayContract.claim().then(tx => {
+    return await giveawayContract.claim().then(tx => {
       console.log(tx)
       return tx.wait().then(() => toast.push('BKG Claimed'))
     }).catch((e) => {
