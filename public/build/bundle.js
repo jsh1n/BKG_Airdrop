@@ -30772,7 +30772,7 @@ var app = (function () {
                           decimals: 18
                         },
                         blockExplorerUrls: ['https://shibuya.subscan.io'],
-                        rpcUrls: ['https://rpc.shibuya.astar.network:8545	'],
+                        rpcUrls: ['https://rpc.shibuya.astar.network:8545'],
                       },
                     ],
                   });
@@ -30780,7 +30780,7 @@ var app = (function () {
                   console.error(addError);
                 }
               }
-              console.error(e);
+              console.error('hoge', e);
             }
         }
       }
