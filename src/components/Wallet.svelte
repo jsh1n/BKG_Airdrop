@@ -23,8 +23,7 @@
     provider = new ethers.providers.Web3Provider(window.ethereum, 'any');
     provider.on("network", (newNetwork, oldNetwork) => {
         if (oldNetwork) {
-            toast.push(`Network Change Detected! ${JSON.stringify(newNetwork)}`)
-            window.location.reload();
+          window.location.reload();
         }
     });
 

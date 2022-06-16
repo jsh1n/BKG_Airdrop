@@ -1,5 +1,6 @@
 export async function switchEthereumChainOrNothing(ethereum) {
-    if (ethereum.networkVersion !== 81) {
+    const chainId = await ethereum.request({ method: 'net_version'})
+    if (chainId !== 81) {
         try {
           await ethereum.request({
             method: 'wallet_switchEthereumChain',
